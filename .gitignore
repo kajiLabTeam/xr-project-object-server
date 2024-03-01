@@ -21,3 +21,9 @@ docker/postgres/data/
 
 # environment file
 .env
+
+# Postgres
+docker/minio/data/
+
+# Minio
+docker/postgres/data/
