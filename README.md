@@ -12,11 +12,6 @@
 make up
 ```
 ### モジュールインストール
-`pipenv`が入っていない場合
-```bash
-brew install 
-```
-
 ```bash
 caego build
 ```
