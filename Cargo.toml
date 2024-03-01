@@ -8,3 +8,8 @@ edition = "2021"
 [dependencies]
 actix-rt = "2.9.0"
 actix-web = "4.5.1"
+serde = { version = "1.0.152", features = ["derive"] }
+ulid = "1.1.2"
+url = "2.5.0"
+thiserror= "1.0"
+anyhow = "1.0"
