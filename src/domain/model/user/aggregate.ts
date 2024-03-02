@@ -1,4 +1,4 @@
-import { UserId } from "./userId";
+import { UserId } from './userId';
 
 export class UserAggregate {
   private _id: UserId;
@@ -7,7 +7,11 @@ export class UserAggregate {
     this._id = _id;
   }
 
-  get id() {
+  getIdOfPrivateValue(): UserId {
     return this._id;
+  }
+
+  static userIdFromStr(id: string): UserId {
+    return new UserId(id);
   }
 }
