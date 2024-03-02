@@ -1,38 +1,68 @@
-import { ObjectId } from "./objectId";
-import { SpotId } from "./spotId";
-import { SignedUrl } from "./signedUrl";
-import { UserId } from "../user/userId";
+import { SpotId } from './spotId';
+import { ObjectId } from './objectId';
+import { Extension } from './extension';
+import { PreSignedUrl } from './preSignedUrl';
+import { UserAggregate } from '../user/aggregate';
 
 export class ObjectAggregate {
   private _id: ObjectId;
-  private _posterId: UserId;
+  private _extension: Extension;
+  private _userId: UserAggregate;
   private _spotId: SpotId;
-  private _signedUrl: SignedUrl;
+  private _preSignedUrl: PreSignedUrl;
+
+  // TODO: 署名付きURLの値の持ち方を考える
   constructor(
-    _id: ObjectId = new ObjectId(),
-    _posterId: UserId,
+    _extension: Extension,
+    _userId: UserAggregate,
     _spotId: SpotId,
-    _signedUrl: SignedUrl
+    _id: ObjectId = new ObjectId(),
+    _preSignedUrl: PreSignedUrl = new PreSignedUrl(),
   ) {
     this._id = _id;
-    this._posterId = _posterId;
+    this._extension = _extension;
+    this._userId = _userId;
     this._spotId = _spotId;
-    this._signedUrl = _signedUrl;
+    this._preSignedUrl = _preSignedUrl;
   }
 
-  get id() {
+  getIdOfPrivateValue() {
     return this._id;
   }
 
-  get posterId() {
-    return this._posterId;
+  getExtensionOfPrivateValue() {
+    return this._extension;
   }
 
-  get spotId() {
+  getUserIdOfPrivateValue() {
+    return this._userId;
+  }
+
+  getSpotIdOfPrivateValue() {
     return this._spotId;
   }
 
-  get signedUrl() {
-    return this._signedUrl;
+  getSignedUrlOfPrivateValue() {
+    return this._preSignedUrl;
+  }
+
+  static idFromStr(id: string): ObjectId {
+    return new ObjectId(id);
+  }
+
+  static extensionFromStr(extension: string) {
+    return new Extension(extension);
+  }
+
+  static spotIdFromStr(id: string): SpotId {
+    return new SpotId(id);
+  }
+
+  static spotIdsFromStr(ids: string[]): SpotId[] {
+    return ids.map((id) => this.spotIdFromStr(id));
+  }
+
+  static preSignedUrlFromStr(url: string): PreSignedUrl {
+    return new PreSignedUrl(url);
   }
 }
