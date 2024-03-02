@@ -1,8 +1,5 @@
 # オブジェクトサーバ
 
-> [!CAUTION]
-> 正常に実行はできますが、リポジトリはモック化（定数化）された値しか返しません
-
 > [!IMPORTANT]
 > 環境変数は[こちらから](https://kjlb.esa.io/posts/5239)確認してください
 
@@ -13,12 +10,12 @@ make up
 ```
 ### モジュールインストール
 ```bash
-caego build
+npm i
 ```
 
 ### サーバの実行
 ```bash
-cargo run src/main.rs
+npm start
 ```
 
 ## その他
