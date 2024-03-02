@@ -1,23 +1,31 @@
-import { ObjectId } from "../object/objectId";
-import { ObjectCollectionId } from "./objectCollection";
+import { ObjectId } from '../object/objectId';
+import { ObjectAggregate } from '../object/aggregate';
+import { ObjectCollectionId } from './objectCollection';
 
 export class ObjectCollectionAggregate {
   private _id: ObjectCollectionId;
-  private _object_ids: ObjectId[];
+  private _objects: ObjectAggregate[];
 
-  constructor(
-    _id: ObjectCollectionId = new ObjectCollectionId(),
-    _object_ids: ObjectId[]
-  ) {
-    this._id = _id;
-    this._object_ids = _object_ids;
+  constructor(_objects: ObjectAggregate[]) {
+    this._id = new ObjectCollectionId();
+    this._objects = _objects;
   }
 
-  get id() {
+  getIdOfPrivateValue() {
     return this._id;
   }
 
-  get object_ids() {
-    return this._object_ids;
+  getObjectsOfPrivateValue() {
+    return this._objects;
+  }
+
+  addObject(object: ObjectAggregate) {
+    this._objects.push(object);
+  }
+
+  removeObject(objectId: ObjectId) {
+    this._objects = this._objects.filter((object) => {
+      return object.getIdOfPrivateValue() !== objectId;
+    });
   }
 }
