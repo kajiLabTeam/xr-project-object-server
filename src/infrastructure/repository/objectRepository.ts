@@ -32,16 +32,10 @@ export class ObjectRepository implements ObjectRepositoryImpl {
     const objectRecordUserId = objectRecord.getUserIdOfPrivateValue();
     const objectRecordSpotId = objectRecord.getSpotIdOfPrivateValue();
 
-    // TODO : アプリIDを入れるようにする、ドメイン層に移動
-    const createObjectBucket = `${OBJECTS_BUCKET_NAME}`;
     const fileName = `${objectRecordId}.${objectRecordExtension}`;
 
     const objectViewUrlRecord =
-      await preSignedUrlGateway.publishViewPresignedUrl(
-        s3,
-        createObjectBucket,
-        fileName,
-      );
+      await preSignedUrlGateway.publishViewPresignedUrl(s3, fileName);
 
     return new ObjectAggregate(
       ObjectAggregate.extensionFromStr(objectRecordExtension),
@@ -85,16 +79,10 @@ export class ObjectRepository implements ObjectRepositoryImpl {
     const objectRecordUserId = objectRecord.getUserIdOfPrivateValue();
     const objectRecordSpotId = objectRecord.getSpotIdOfPrivateValue();
 
-    // TODO : アプリIDを入れるようにする、ドメイン層に移動
-    const createObjectBucket = `${OBJECTS_BUCKET_NAME}`;
     const fileName = `${objectRecordId}.${objectRecordExtension}`;
 
     const objectUploadUrlRecord =
-      await preSignedUrlGateway.publishUploadPresignedUrl(
-        s3,
-        createObjectBucket,
-        fileName,
-      );
+      await preSignedUrlGateway.publishUploadPresignedUrl(s3, fileName);
 
     return new ObjectAggregate(
       ObjectAggregate.extensionFromStr(objectRecordExtension),

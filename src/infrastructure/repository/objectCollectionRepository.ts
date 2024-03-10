@@ -38,13 +38,12 @@ export class ObjectCollectionRepository
           const objectRecordUserId = objectRecord.getUserIdOfPrivateValue();
           const objectRecordSpotId = objectRecord.getSpotIdOfPrivateValue();
 
-          const createObjectBucket = `${OBJECTS_BUCKET_NAME}`;
+
           const fileName = `${objectRecordId}.${objectRecordExtension}`;
 
           const objectViewUrlRecord =
             await preSignedUrlGateway.publishViewPresignedUrl(
               s3,
-              createObjectBucket,
               fileName,
             );
 
