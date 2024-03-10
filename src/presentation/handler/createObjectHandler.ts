@@ -1,8 +1,10 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction, application } from 'express';
 import { ObjectAggregate } from '../../domain/model/object/aggregate';
 import { UserAggregate } from '../../domain/model/user/aggregate';
 import { CreateObjectService } from '../../application/service/createObjectService';
 import { ObjectRepository } from '../../infrastructure/repository/objectRepository';
+import { getCredential } from '../middleware/applicationMiddleware';
+import { Application } from '../../utils/globalVariable';
 
 export const createObjectRouter = express.Router();
 
@@ -28,6 +30,15 @@ createObjectRouter.post(
     req: Request<{}, {}, CreateObjectRequest>,
     res: Response<CreateObjectResponse | string>,
   ) => {
+    const authorization = req.headers.authorization;
+    if (authorization === undefined) {
+      res.status(401).send('Unauthorized');
+      return;
+    }
+    
+    const applicationId = getCredential(authorization);
+    Application.id = applicationId;
+    
     const requestBody: CreateObjectRequest = req.body;
 
     const userAggregate = new UserAggregate(

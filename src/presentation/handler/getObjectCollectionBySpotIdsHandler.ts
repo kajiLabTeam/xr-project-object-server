@@ -5,6 +5,8 @@ import { UserAggregate } from '../../domain/model/user/aggregate';
 import { GetObjectCollectionBySpotIdService } from '../../application/service/getObjectCollectionBySpotIdsService';
 import { ObjectBrowsingLogRepository } from '../../infrastructure/repository/objectBrowsingLogRepository';
 import { ObjectCollectionRepository } from '../../infrastructure/repository/objectCollectionRepository';
+import { Application } from '../../utils/globalVariable';
+import { getCredential } from '../middleware/applicationMiddleware';
 
 export const GetObjectCollectionBySpotIdRouter = express.Router();
 
@@ -36,6 +38,15 @@ GetObjectCollectionBySpotIdRouter.post(
     req: Request<{}, {}, GetObjectCollectionBySpotIdRequest>,
     res: Response<GetObjectCollectionBySpotIdResponse | string>,
   ) => {
+    const authorization = req.headers.authorization;
+    if (authorization === undefined) {
+      res.status(401).send('Unauthorized');
+      return;
+    }
+
+    const applicationId = getCredential(authorization);
+    Application.id = applicationId;
+
     const requestBody: GetObjectCollectionBySpotIdRequest = req.body;
 
     const userId = UserAggregate.userIdFromStr(requestBody.userId);
