@@ -7,6 +7,7 @@ import { ObjectBrowsingLogRepository } from '../../infrastructure/repository/obj
 import { ObjectCollectionRepository } from '../../infrastructure/repository/objectCollectionRepository';
 import { Application } from '../../utils/globalVariable';
 import { getCredential } from '../middleware/applicationMiddleware';
+import { ErrorResponse } from '../error/error_presentation';
 
 export const GetObjectCollectionBySpotIdRouter = express.Router();
 
@@ -17,6 +18,7 @@ type GetObjectCollectionBySpotIdRequest = {
 
 type ObjectItem = {
   id: string;
+  extension: string;
   posterId: string;
   spotId: string;
   viewUrl: string;
@@ -36,11 +38,11 @@ GetObjectCollectionBySpotIdRouter.post(
   '/api/object/collection/get',
   async (
     req: Request<{}, {}, GetObjectCollectionBySpotIdRequest>,
-    res: Response<GetObjectCollectionBySpotIdResponse | string>,
+    res: Response<GetObjectCollectionBySpotIdResponse | ErrorResponse>,
   ) => {
     const authorization = req.headers.authorization;
     if (authorization === undefined) {
-      res.status(401).send('Unauthorized');
+      res.status(401).send({ error: 'Unauthorized' });
       return;
     }
 
@@ -49,13 +51,22 @@ GetObjectCollectionBySpotIdRouter.post(
 
     const requestBody: GetObjectCollectionBySpotIdRequest = req.body;
 
+    if (requestBody.spotIds === null || requestBody.spotIds.length === 0) {
+      const response: GetObjectCollectionBySpotIdResponse = {
+        objects: [],
+      };
+
+      res.status(404).json(response);
+      return;
+    }
+
     const userId = UserAggregate.userIdFromStr(requestBody.userId);
     const spotIds = ObjectAggregate.spotIdsFromStr(requestBody.spotIds);
 
     const getObjectCollectionBySpotIdResult =
       await getObjectCollectionBySpotIdService.run(userId, spotIds);
     if (getObjectCollectionBySpotIdResult === undefined) {
-      res.status(500).send('Internal Server Error');
+      res.status(404).json({ error: 'Object Not Found' });
       return;
     }
 
@@ -66,6 +77,9 @@ GetObjectCollectionBySpotIdRouter.post(
         .map((object) => {
           return {
             id: object.getIdOfPrivateValue().getIdOfPrivateValue(),
+            extension: object
+              .getExtensionOfPrivateValue()
+              .getExtensionOfPrivateValue(),
             posterId: object
               .getUserIdOfPrivateValue()
               .getIdOfPrivateValue()

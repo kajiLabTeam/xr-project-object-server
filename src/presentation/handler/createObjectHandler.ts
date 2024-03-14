@@ -5,6 +5,7 @@ import { CreateObjectService } from '../../application/service/createObjectServi
 import { ObjectRepository } from '../../infrastructure/repository/objectRepository';
 import { getCredential } from '../middleware/applicationMiddleware';
 import { Application } from '../../utils/globalVariable';
+import { ErrorResponse } from '../error/error_presentation';
 
 export const createObjectRouter = express.Router();
 
@@ -28,11 +29,11 @@ createObjectRouter.post(
   '/api/object/create',
   async (
     req: Request<{}, {}, CreateObjectRequest>,
-    res: Response<CreateObjectResponse | string>,
+    res: Response<CreateObjectResponse | ErrorResponse>,
   ) => {
     const authorization = req.headers.authorization;
     if (authorization === undefined) {
-      res.status(401).send('Unauthorized');
+      res.status(401).send({ error: 'Unauthorized' });
       return;
     }
     
@@ -54,7 +55,7 @@ createObjectRouter.post(
     );
 
     if (createObjectResult === undefined) {
-      res.status(500).send('Internal Server Error');
+      res.status(500).send({ error: 'Internal Server Error' });
       return;
     }
 

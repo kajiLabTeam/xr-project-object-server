@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { ErrorRequestHandler, Request, Response } from 'express';
 
 import { UserAggregate } from '../../domain/model/user/aggregate';
 import { ObjectAggregate } from '../../domain/model/object/aggregate';
@@ -7,6 +7,7 @@ import { ObjectRepository } from '../../infrastructure/repository/objectReposito
 import { ObjectBrowsingLogRepository } from '../../infrastructure/repository/objectBrowsingLogRepository';
 import { getCredential } from '../middleware/applicationMiddleware';
 import { Application } from '../../utils/globalVariable';
+import { ErrorResponse } from '../error/error_presentation';
 
 export const GetObjectBySpotIdRouter = express.Router();
 
@@ -31,11 +32,11 @@ GetObjectBySpotIdRouter.post(
   '/api/object/get',
   async (
     req: Request<{}, {}, GetObjectBySpotIdRequest>,
-    res: Response<GetObjectBySpotIdResponse | string>,
+    res: Response<GetObjectBySpotIdResponse | ErrorResponse>,
   ) => {
     const authorization = req.headers.authorization;
     if (authorization === undefined) {
-      res.status(401).send('Unauthorized');
+      res.status(401).send({ error: 'Unauthorized' });
       return;
     }
 
@@ -49,7 +50,7 @@ GetObjectBySpotIdRouter.post(
       ObjectAggregate.spotIdFromStr(requestBody.spotId),
     );
     if (getObjectBySpotIdResult === undefined) {
-      res.status(500).send('Internal Server Error');
+      res.status(404).send({ error: 'Spot Not Found' });
       return;
     }
 
