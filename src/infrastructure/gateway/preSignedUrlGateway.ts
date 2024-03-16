@@ -14,7 +14,6 @@ import {
   UploadPresignedUrlRecord,
   ViewPreSignedUrlRecord,
 } from '../record/preSignedUrlRecord';
-import { InfrastructureError } from '../error/infrastructureError';
 import { Application } from '../../utils/globalVariable';
 
 export class PreSignedUrlGateway {
@@ -35,10 +34,7 @@ export class PreSignedUrlGateway {
 
       return new UploadPresignedUrlRecord(url);
     } catch (e) {
-      throw new InfrastructureError(
-        'FailedToPublishUploadPresignedUrl',
-        'Failed to publish upload presigned url',
-      );
+      throw e;
     }
   }
 
@@ -59,10 +55,7 @@ export class PreSignedUrlGateway {
 
       return new ViewPreSignedUrlRecord(url);
     } catch (e) {
-      throw new InfrastructureError(
-        'FailedToPublishViewPresignedUrl',
-        'Failed to publish view presigned url',
-      );
+      throw e;
     }
   }
 }

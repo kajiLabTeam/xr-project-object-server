@@ -36,10 +36,10 @@ createObjectRouter.post(
       res.status(401).send({ error: 'Unauthorized' });
       return;
     }
-    
+
     const applicationId = getCredential(authorization);
     Application.id = applicationId;
-    
+
     const requestBody: CreateObjectRequest = req.body;
 
     const userAggregate = new UserAggregate(
@@ -48,38 +48,42 @@ createObjectRouter.post(
     const spotId = ObjectAggregate.spotIdFromStr(requestBody.spotId);
     const extension = ObjectAggregate.extensionFromStr(requestBody.extension);
 
-    const createObjectResult = await createObjectService.run(
-      userAggregate,
-      spotId,
-      extension,
-    );
+    try {
+      const createObjectResult = await createObjectService.run(
+        userAggregate,
+        spotId,
+        extension,
+      );
 
-    if (createObjectResult === undefined) {
+      if (createObjectResult === undefined) {
+        res.status(404).send({ error: 'Internal Server Error' });
+        return;
+      }
+
+      // レスポンスを送信
+      const response: CreateObjectResponse = {
+        id: createObjectResult
+          .getIdOfPrivateValue()
+          .getIdOfPrivateValue()
+          .toString(),
+        posterId: createObjectResult
+          .getUserIdOfPrivateValue()
+          .getIdOfPrivateValue()
+          .getIdOfPrivateValue(),
+        spotId: createObjectResult
+          .getSpotIdOfPrivateValue()
+          .getIdOfPrivateValue(),
+        extension: createObjectResult
+          .getExtensionOfPrivateValue()
+          .getExtensionOfPrivateValue(),
+        uploadUrl: createObjectResult
+          .getSignedUrlOfPrivateValue()
+          .getPreSignedUrlOfPrivateValue(),
+      };
+
+      res.status(201).json(response);
+    } catch (e) {
       res.status(500).send({ error: 'Internal Server Error' });
-      return;
     }
-
-    // レスポンスを送信
-    const response: CreateObjectResponse = {
-      id: createObjectResult
-        .getIdOfPrivateValue()
-        .getIdOfPrivateValue()
-        .toString(),
-      posterId: createObjectResult
-        .getUserIdOfPrivateValue()
-        .getIdOfPrivateValue()
-        .getIdOfPrivateValue(),
-      spotId: createObjectResult
-        .getSpotIdOfPrivateValue()
-        .getIdOfPrivateValue(),
-      extension: createObjectResult
-        .getExtensionOfPrivateValue()
-        .getExtensionOfPrivateValue(),
-      uploadUrl: createObjectResult
-        .getSignedUrlOfPrivateValue()
-        .getPreSignedUrlOfPrivateValue(),
-    };
-
-    res.status(201).json(response);
   },
 );

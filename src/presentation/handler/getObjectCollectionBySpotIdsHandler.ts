@@ -63,35 +63,39 @@ GetObjectCollectionBySpotIdRouter.post(
     const userId = UserAggregate.userIdFromStr(requestBody.userId);
     const spotIds = ObjectAggregate.spotIdsFromStr(requestBody.spotIds);
 
-    const getObjectCollectionBySpotIdResult =
-      await getObjectCollectionBySpotIdService.run(userId, spotIds);
-    if (getObjectCollectionBySpotIdResult === undefined) {
-      res.status(404).json({ error: 'Object Not Found' });
-      return;
+    try {
+      const getObjectCollectionBySpotIdResult =
+        await getObjectCollectionBySpotIdService.run(userId, spotIds);
+      if (getObjectCollectionBySpotIdResult === undefined) {
+        res.status(404).json({ error: 'Object Not Found' });
+        return;
+      }
+
+      // レスポンスを送信
+      const response: GetObjectCollectionBySpotIdResponse = {
+        objects: getObjectCollectionBySpotIdResult
+          .getObjectsOfPrivateValue()
+          .map((object) => {
+            return {
+              id: object.getIdOfPrivateValue().getIdOfPrivateValue(),
+              extension: object
+                .getExtensionOfPrivateValue()
+                .getExtensionOfPrivateValue(),
+              posterId: object
+                .getUserIdOfPrivateValue()
+                .getIdOfPrivateValue()
+                .getIdOfPrivateValue(),
+              spotId: object.getSpotIdOfPrivateValue().getIdOfPrivateValue(),
+              viewUrl: object
+                .getSignedUrlOfPrivateValue()
+                .getPreSignedUrlOfPrivateValue(),
+            };
+          }),
+      };
+
+      res.json(response);
+    } catch (e) {
+      res.status(500).send({ error: 'Internal Server Error' });
     }
-
-    // レスポンスを送信
-    const response: GetObjectCollectionBySpotIdResponse = {
-      objects: getObjectCollectionBySpotIdResult
-        .getObjectsOfPrivateValue()
-        .map((object) => {
-          return {
-            id: object.getIdOfPrivateValue().getIdOfPrivateValue(),
-            extension: object
-              .getExtensionOfPrivateValue()
-              .getExtensionOfPrivateValue(),
-            posterId: object
-              .getUserIdOfPrivateValue()
-              .getIdOfPrivateValue()
-              .getIdOfPrivateValue(),
-            spotId: object.getSpotIdOfPrivateValue().getIdOfPrivateValue(),
-            viewUrl: object
-              .getSignedUrlOfPrivateValue()
-              .getPreSignedUrlOfPrivateValue(),
-          };
-        }),
-    };
-
-    res.json(response);
   },
 );

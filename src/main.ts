@@ -4,8 +4,9 @@ import { createObjectRouter } from './presentation/handler/createObjectHandler';
 import { GetObjectBySpotIdRouter } from './presentation/handler/getObjectBySpotIdHandler';
 import { GetObjectCollectionBySpotIdRouter } from './presentation/handler/getObjectCollectionBySpotIdsHandler';
 import { DomainError } from './domain/error/domainError';
+import { InfrastructureError } from './infrastructure/error/infrastructureError';
 
-const PORT = 3001;
+const PORT = 3000;
 
 const app = express();
 
@@ -30,6 +31,11 @@ function errorHandler(
 ) {
   if (err instanceof DomainError) {
     res.status(400).send({ type: err.type, message: err.message });
+    return;
+  }
+
+  if (err instanceof InfrastructureError) {
+    res.status(500).send({ type: err.type, message: err.message });
     return;
   }
 

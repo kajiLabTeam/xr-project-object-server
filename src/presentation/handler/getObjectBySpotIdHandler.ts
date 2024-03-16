@@ -45,29 +45,37 @@ GetObjectBySpotIdRouter.post(
 
     const requestBody: GetObjectBySpotIdRequest = req.body;
 
-    const getObjectBySpotIdResult = await getObjectBySpotIdService.run(
-      UserAggregate.userIdFromStr(requestBody.userId),
-      ObjectAggregate.spotIdFromStr(requestBody.spotId),
-    );
-    if (getObjectBySpotIdResult === undefined) {
-      res.status(404).send({ error: 'Spot Not Found' });
-      return;
-    }
+    try {
+      const userAggregate = new UserAggregate(
+        UserAggregate.userIdFromStr(requestBody.userId),
+      );
+      const spotId = ObjectAggregate.spotIdFromStr(requestBody.spotId);
 
-    // レスポンスを送信
-    const response: GetObjectBySpotIdResponse = {
-      id: getObjectBySpotIdResult.getIdOfPrivateValue().getIdOfPrivateValue(),
-      posterId: getObjectBySpotIdResult
-        .getUserIdOfPrivateValue()
-        .getIdOfPrivateValue()
-        .getIdOfPrivateValue(),
-      spotId: getObjectBySpotIdResult
-        .getSpotIdOfPrivateValue()
-        .getIdOfPrivateValue(),
-      viewUrl: getObjectBySpotIdResult
-        .getSignedUrlOfPrivateValue()
-        .getPreSignedUrlOfPrivateValue(),
-    };
-    res.json(response);
+      const getObjectBySpotIdResult = await getObjectBySpotIdService.run(
+        userAggregate.getIdOfPrivateValue(),
+        spotId,
+      );
+      if (getObjectBySpotIdResult === undefined) {
+        res.status(404).send({ error: 'Spot Not Found' });
+        return;
+      }
+
+      const response: GetObjectBySpotIdResponse = {
+        id: getObjectBySpotIdResult.getIdOfPrivateValue().getIdOfPrivateValue(),
+        posterId: getObjectBySpotIdResult
+          .getUserIdOfPrivateValue()
+          .getIdOfPrivateValue()
+          .getIdOfPrivateValue(),
+        spotId: getObjectBySpotIdResult
+          .getSpotIdOfPrivateValue()
+          .getIdOfPrivateValue(),
+        viewUrl: getObjectBySpotIdResult
+          .getSignedUrlOfPrivateValue()
+          .getPreSignedUrlOfPrivateValue(),
+      };
+      res.json(response);
+    } catch (e) {
+      res.status(500).send({ error: 'Internal Server Error' });
+    }
   },
 );

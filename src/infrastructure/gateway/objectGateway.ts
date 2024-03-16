@@ -7,23 +7,27 @@ export class ObjectGateway {
     conn: Pool,
     spotId: string,
   ): Promise<ObjectRecord | undefined> {
-    const objectSelectResult = await conn.query(
-      'SELECT * FROM objects WHERE spot_id = $1',
-      [spotId],
-    );
-
-    if (objectSelectResult.rows && objectSelectResult.rows.length > 0) {
-      const object = objectSelectResult.rows[0];
-      return new ObjectRecord(
-        object.id,
-        object.extension,
-        object.user_id,
-        object.spot_id,
-        object.created_at,
+    try {
+      const objectSelectResult = await conn.query(
+        'SELECT * FROM objects WHERE spot_id = $1',
+        [spotId],
       );
-    }
 
-    return undefined;
+      if (objectSelectResult.rows && objectSelectResult.rows.length > 0) {
+        const object = objectSelectResult.rows[0];
+        return new ObjectRecord(
+          object.id,
+          object.extension,
+          object.user_id,
+          object.spot_id,
+          object.created_at,
+        );
+      }
+
+      return undefined;
+    } catch (e) {
+      throw e;
+    }
   }
 
   async findByIds(

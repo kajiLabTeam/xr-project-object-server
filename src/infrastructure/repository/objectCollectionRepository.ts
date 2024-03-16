@@ -6,9 +6,9 @@ import { ObjectCollectionRepositoryImpl } from '../../domain/repository_impl/obj
 import { ObjectGateway } from '../gateway/objectGateway';
 import { PreSignedUrlGateway } from '../gateway/preSignedUrlGateway';
 import { S3Client } from '@aws-sdk/client-s3';
-import { OBJECTS_BUCKET_NAME } from '../../config/const';
 import { ObjectAggregate } from '../../domain/model/object/aggregate';
 import { UserAggregate } from '../../domain/model/user/aggregate';
+import { InfrastructureError } from '../error/infrastructureError';
 
 const objectGateway = new ObjectGateway();
 const preSignedUrlGateway = new PreSignedUrlGateway();
@@ -38,24 +38,29 @@ export class ObjectCollectionRepository
           const objectRecordUserId = objectRecord.getUserIdOfPrivateValue();
           const objectRecordSpotId = objectRecord.getSpotIdOfPrivateValue();
 
-
           const fileName = `${objectRecordId}.${objectRecordExtension}`;
 
-          const objectViewUrlRecord =
-            await preSignedUrlGateway.publishViewPresignedUrl(
-              s3,
-              fileName,
-            );
+          try {
+            const objectViewUrlRecord =
+              await preSignedUrlGateway.publishViewPresignedUrl(s3, fileName);
 
-          return new ObjectAggregate(
-            ObjectAggregate.extensionFromStr(objectRecordExtension),
-            new UserAggregate(UserAggregate.userIdFromStr(objectRecordUserId)),
-            ObjectAggregate.spotIdFromStr(objectRecordSpotId),
-            ObjectAggregate.idFromStr(objectRecordId),
-            ObjectAggregate.preSignedUrlFromStr(
-              objectViewUrlRecord.getUrlOfPrivateValue(),
-            ),
-          );
+            return new ObjectAggregate(
+              ObjectAggregate.extensionFromStr(objectRecordExtension),
+              new UserAggregate(
+                UserAggregate.userIdFromStr(objectRecordUserId),
+              ),
+              ObjectAggregate.spotIdFromStr(objectRecordSpotId),
+              ObjectAggregate.idFromStr(objectRecordId),
+              ObjectAggregate.preSignedUrlFromStr(
+                objectViewUrlRecord.getUrlOfPrivateValue(),
+              ),
+            );
+          } catch (e) {
+            throw new InfrastructureError(
+              'FailedToPublishViewPresignedUrl',
+              'FailedToPublishViewPresignedUrl',
+            );
+          }
         }),
       ),
     );
