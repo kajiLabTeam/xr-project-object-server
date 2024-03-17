@@ -9,6 +9,8 @@ import { S3Client } from '@aws-sdk/client-s3';
 import { ObjectAggregate } from '../../domain/model/object/aggregate';
 import { UserAggregate } from '../../domain/model/user/aggregate';
 import { InfrastructureError } from '../error/infrastructureError';
+import application from 'express';
+import { ApplicationAggregate } from '../../domain/model/applicaation/aggregate';
 
 const objectGateway = new ObjectGateway();
 const preSignedUrlGateway = new PreSignedUrlGateway();
@@ -20,6 +22,7 @@ export class ObjectCollectionRepository
     s3: S3Client,
     conn: Pool,
     spotIds: SpotId[],
+    application: ApplicationAggregate,
   ): Promise<ObjectCollectionAggregate | undefined> {
     const objectCollectionRecord = await objectGateway.findByIds(
       conn,
@@ -29,40 +32,40 @@ export class ObjectCollectionRepository
       return undefined;
     }
 
-    return new ObjectCollectionAggregate(
-      await Promise.all(
-        objectCollectionRecord.map(async (objectRecord) => {
-          const objectRecordId = objectRecord.getIdOfPrivateValue();
-          const objectRecordExtension =
-            objectRecord.getExtensionOfPrivateValue();
-          const objectRecordUserId = objectRecord.getUserIdOfPrivateValue();
-          const objectRecordSpotId = objectRecord.getSpotIdOfPrivateValue();
+    const objectCollectionAggregate = new ObjectCollectionAggregate([]);
 
-          const fileName = `${objectRecordId}.${objectRecordExtension}`;
+    for (const objectRecord of objectCollectionRecord) {
+      const objectRecordId = objectRecord.getIdOfPrivateValue();
+      const objectRecordExtension = objectRecord.getExtensionOfPrivateValue();
+      const objectRecordUserId = objectRecord.getUserIdOfPrivateValue();
+      const objectRecordSpotId = objectRecord.getSpotIdOfPrivateValue();
 
-          try {
-            const objectViewUrlRecord =
-              await preSignedUrlGateway.publishViewPresignedUrl(s3, fileName);
+      const fileName = `${objectRecordId}.${objectRecordExtension}`;
 
-            return new ObjectAggregate(
-              ObjectAggregate.extensionFromStr(objectRecordExtension),
-              new UserAggregate(
-                UserAggregate.userIdFromStr(objectRecordUserId),
-              ),
-              ObjectAggregate.spotIdFromStr(objectRecordSpotId),
-              ObjectAggregate.idFromStr(objectRecordId),
-              ObjectAggregate.preSignedUrlFromStr(
-                objectViewUrlRecord.getUrlOfPrivateValue(),
-              ),
-            );
-          } catch (e) {
-            throw new InfrastructureError(
-              'FailedToPublishViewPresignedUrl',
-              'FailedToPublishViewPresignedUrl',
-            );
-          }
-        }),
-      ),
-    );
+      const objectViewUrlRecord =
+        await preSignedUrlGateway.publishViewPresignedUrl(
+          s3,
+          fileName,
+          application.getApplicationIdOfPrivateValue(),
+        );
+
+      if (!objectViewUrlRecord) {
+        return undefined;
+      } else {
+        objectCollectionAggregate.addObject(
+          new ObjectAggregate(
+            ObjectAggregate.extensionFromStr(objectRecordExtension),
+            new UserAggregate(UserAggregate.userIdFromStr(objectRecordUserId)),
+            ObjectAggregate.spotIdFromStr(objectRecordSpotId),
+            ObjectAggregate.idFromStr(objectRecordId),
+            ObjectAggregate.preSignedUrlFromStr(
+              objectViewUrlRecord.getUrlOfPrivateValue(),
+            ),
+          ),
+        );
+      }
+    }
+
+    return objectCollectionAggregate;
   }
 }
